@@ -28,8 +28,8 @@ public class AnimatedSprite extends Sprite {
 			spriteNames.add(imageFileName[i]);
 		}
 		currFrame = startInd = 0;
-		endInd = 3;
-		speed = 5;
+		endInd = spriteNames.size()-1;
+		speed = 10;
 		count = 0;
 		playing = false;
 		this.setImage(spriteNames.get(startInd));

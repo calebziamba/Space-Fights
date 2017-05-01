@@ -20,10 +20,12 @@ import edu.virginia.engine.tweening.TweenEvent;
 import edu.virginia.engine.tweening.TweenJuggler;
 import edu.virginia.engine.tweening.TweenableParam;
 import edu.virginia.engine.util.SoundManager;
+import edu.virginia.lab1test.SpaceFights;
 
 public class Screens implements IEventListener {
 	public static final int GAME_SCENE = 0;
 	public static final int SELECT_SCENE = 1;
+	public static final int GAME_OVER = 2;
 	private int sceneToUpdate = SELECT_SCENE;
 
 	/**
@@ -50,9 +52,9 @@ public class Screens implements IEventListener {
 
 
 	ArrayList<Sprite> selectorBoxes;
-	int[] shipChoice = {0, 0};
+	int[] shipChoice = {0, -1, -1, -1};
 	private boolean[] pressedButtonLastFrame = new boolean[4];
-	private boolean[] playersReady = new boolean[4];
+	private boolean[] playersReady = {false, true, true, true};
 
 	/**A class to handle the updating of the screens 
 	 * @param width the width of the game window
@@ -79,35 +81,82 @@ public class Screens implements IEventListener {
 	}
 
 	public void makeShipSelectScreen() {
-		for(int i = 0; i < 2; i++) {
+		for(int i = 0; i < 4; i++) {
 			Sprite selector = new Sprite("p"+i+"SelectorBox", "player"+i+"Selector.png");
 
 			playerAvailableShips.add(new ArrayList<Sprite>());
 			for(ShipType st : ShipType.values()) {
 				Sprite newShip = new Sprite(st.toString(), st.getImageName()+i+".png");
 				selector.addChild(newShip);
-				newShip.setPosition(newShip.getParent().getWidth()/5, newShip.getParent().getHeight()/5);
+				newShip.setPosition(newShip.getParent().getWidth()/2 - newShip.getWidth()/2, 
+						newShip.getParent().getHeight()/2 - newShip.getHeight()/2);
 				newShip.setAlpha(0);
 				playerAvailableShips.get(i).add(newShip);
 			}
-			playerAvailableShips.get(i).get(shipChoice[i]).setAlpha(1);
+			
+			if(shipChoice[i] != -1) {
+				playerAvailableShips.get(i).get(shipChoice[i]).setAlpha(1);
+			} else{
+				selector.setVisible(false);
+			}
 			selector.setPosition(gameWidth*(i+1)/5, gameHeight/5);
-
+			
+			
 			shipSelectScreen.addChild(selector);
+			
+			
+			
 			selectorBoxes.add(selector);
 		}
+		Sprite blurb = new Sprite("blurb", "blurb.png");
+		blurb.setPosition(500,500);
+		shipSelectScreen.addChild(blurb);
+
+		
+		
 	}
 
 	public void shipSelectScreen(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
 		if(scene != null) {
-			System.out.println(ShipType.Lion.toString());
+			//System.out.println(ShipType.Lion.toString());
 			// if all 4 (or however many there are...) players ready, then call gameStart
-			if(playersReady[0] && playersReady[1]) {
+			
+			if(playersReady[0] && playersReady[1] && playersReady[2] && playersReady[3]) { // TODO: add in functionality for less than 4 players
+//			if(playersReady[0] && playersReady[1]) { // TODO: add in functionality for less than 4 players
+				for(int i = 0; i < playersReady.length; i++) {
+					if(shipChoice[i] != -1) {
+						playersReady[i] = false;
+						
+					}
+					selectorBoxes.get(i).removeChildByID("player"+i+"Ready");
+				}
+//				selectorBoxes.get(0).removeChildByID("player"+0+"Ready");
+//				selectorBoxes.get(1).removeChildByID("player"+1+"Ready");
+//				selectorBoxes.get(2).removeChildByID("player"+2+"Ready");
+//				selectorBoxes.get(3).removeChildByID("player"+3+"Ready");
+
 				gameStart();
+				return;
 			}
+			
+			
 			for(int i = 0; i < controllers.size(); i++) {
-				Sprite currently_selected_ship = playerAvailableShips.get(i).get(shipChoice[i]);
 				Sprite selector = selectorBoxes.get(i);
+				
+				if(shipChoice[i] == -1 && controllers.get(i).isButtonPressed(GamePad.BUTTON_START)) {
+					shipChoice[i] = 0;
+					selector.setVisible(true);
+					Sprite ship = playerAvailableShips.get(i).get(shipChoice[i]);
+					playerAvailableShips.get(i).get(shipChoice[i]).setAlpha(1);
+					playerAvailableShips.get(i).get(shipChoice[i]).setPosition(ship.getParent().getWidth()/2 - ship.getWidth()/2, 
+							ship.getParent().getHeight()/2 - ship.getHeight()/2);
+					pressedButtonLastFrame[i] = true;
+					playersReady[i] = false;
+				} else if (shipChoice[i] == -1){
+					continue;
+				} 
+				Sprite currently_selected_ship = playerAvailableShips.get(i).get(shipChoice[i]);
+
 				if(controllers.get(i).getLeftStickXAxis() == -1 && !playersReady[i]) {
 					if(!pressedButtonLastFrame[i]){ 
 						pressedButtonLastFrame[i] = true;
@@ -162,7 +211,15 @@ public class Screens implements IEventListener {
 						playersReady[i] = false;
 						selector.removeChildByID("player"+i+"Ready");
 					}
-				}	
+				} else if(controllers.get(i).isButtonPressed(GamePad.BUTTON_SELECT) && i != 0 && !playersReady[i]) {
+					if(!pressedButtonLastFrame[i]) {
+						pressedButtonLastFrame[i] = true;
+						playersReady[i] = true;
+						selector.setVisible(false);
+						playerAvailableShips.get(i).get(shipChoice[i]).setAlpha(0);
+						shipChoice[i] = -1;
+					}
+				}
 				else pressedButtonLastFrame[i] = false;
 			}
 		}
@@ -180,8 +237,16 @@ public class Screens implements IEventListener {
 		scene.addChild(gameScreen);
 		scene.addChild(playersLivesBar);
 		playerNode.removeAll();
+		System.out.println(playersLivesBar.removeAll());
 		for(int i = 0; i<shipChoice.length; i++) {
+			System.out.println("first flag" + i);
+			if(shipChoice[i] == -1) {
+				playersLivesBar.addChild(null);
+				continue;
+			}
+			System.out.println("second flag" + i);
 			// make and add player to display tree
+			System.out.println(playersLivesBar.getChildren().toString() + " Before " + i);
 			Ship player = new Ship(ShipType.valueOf(playerAvailableShips.get(i).get(shipChoice[i]).getId()), i);
 			player.addEventListener(collisionManager, CollisionEvent.PLATFORM);
 			player.addEventListener(deathManager, CombatEvent.DEATH);
@@ -203,13 +268,14 @@ public class Screens implements IEventListener {
 				heart.addChild(new Sprite("heart_"+j, "heart.png"));
 			}
 			playersLivesBar.addChild(container);
+			System.out.println(playersLivesBar.getChildren().toString()+ " after " + i);
 		}
 		sceneToUpdate = Screens.GAME_SCENE;
 	}
 
 	public void makeGameScreen() {
-		gameScreen.addChild(playerNode);
 		gameScreen.addChild(levelNode);
+		gameScreen.addChild(playerNode);
 
 		// IDEA TODO: make a level builder class; this will also maybe help to make a level select screen
 		plat1 = new Sprite("plat1", "platformSpaceVertical.png");
@@ -229,7 +295,7 @@ public class Screens implements IEventListener {
 		plat13 = new Sprite("plat13", "platformSpaceVertical.png");
 		plat14 = new Sprite("plat14", "platformSpace.png");
 		plat15 = new Sprite("plat15", "platformSpaceVertical.png");
-		plat16 = new Sprite("plat15", "platformSpace.png");
+		//plat16 = new Sprite("plat15", "platformSpace.png");
 
 		platforms.add(plat1);
 		platforms.add(plat2);
@@ -246,7 +312,7 @@ public class Screens implements IEventListener {
 		platforms.add(plat13);
 		platforms.add(plat14);
 		platforms.add(plat15);
-		platforms.add(plat16);
+		//platforms.add(plat16);
 
 		plat1.setPosition(400, 250);
 		plat2.setPosition(900, 300);
@@ -266,8 +332,8 @@ public class Screens implements IEventListener {
 		plat14.setScaleX(10);
 		plat15.setPosition(gameWidth - plat15.getWidth(), 0);
 		plat15.setScaleY(10);
-		plat16.setPosition(0,630);
-		plat16.setScaleX(10);
+		//plat16.setPosition(0,630);
+		//plat16.setScaleX(10);
 
 		for(int i = 0; i < platforms.size(); i++) {
 			Sprite plat = platforms.get(i);
@@ -275,7 +341,20 @@ public class Screens implements IEventListener {
 		}
 	}
 
-
+	
+	public void gameOverUpdate(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
+		for (GamePad controller : controllers) {
+			if (controller.isButtonPressed(GamePad.BUTTON_START)) {
+				scene.removeChildByID("gameScreen"); 
+				scene.removeChildByID("lifeBars");
+				scene.removeChildByID("gameOver");
+				scene.addChild(shipSelectScreen);
+				sceneToUpdate = Screens.SELECT_SCENE;
+				deadPlayers.clear();
+			}
+		}
+	}
+	
 	public void gameScreenUpdate(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
 		if (scene != null) { // makes sure we loaded everything
 			scene.update(pressedKeys, controllers);
@@ -283,13 +362,23 @@ public class Screens implements IEventListener {
 			// check if only 1 player is left on the screen
 			if(players.size() == 1) {
 				// Display Game Over; players.get(0).getPlayerNum() wins
-				sceneToUpdate = -1;
 				Ship winner = players.get(0);
+				winner.removeEnergy();
 				Tween winnerDance = new Tween(winner);
-				winnerDance.animate(TweenableParam.X, 50, gameWidth, 2000, Function.EASE_IN_OUT_QUAD);
-				winnerDance.animate(TweenableParam.Y, 50, 150, 2000, Function.LINEAR);
-				winnerDance.animate(TweenableParam.ROTATION, 90, 0, 2000, Function.LINEAR);
+				winnerDance.animate(TweenableParam.X, 50, gameWidth, 6000, Function.EASE_IN_OUT_QUAD);
+				winnerDance.animate(TweenableParam.Y, 50, gameHeight, 6000, Function.LINEAR);
+				winnerDance.animate(TweenableParam.ROTATION, 90, 0, 6000, Function.LINEAR);
 				TweenJuggler.getInstance().add(winnerDance);
+				Sprite gameOver = new Sprite("gameOver", "gameOver.png");
+				scene.addChild(gameOver);
+				gameOver.setPosition((SpaceFights.gameWidth/2)-(gameOver.getWidth()/2),200);
+				sceneToUpdate = Screens.GAME_OVER;
+				return;
+			} else if (players.size() == 0) {
+				Sprite gameOver = new Sprite("gameOver", "gameOverDOUBLE.png");
+				scene.addChild(gameOver);
+				gameOver.setPosition((SpaceFights.gameWidth/2)-(gameOver.getWidth()/2),200);
+				sceneToUpdate = Screens.GAME_OVER;
 				return;
 			}
 			ArrayList<Ship> alreadyCollidedWithPlayerThisFrame = new ArrayList<Ship>();
@@ -420,7 +509,12 @@ public class Screens implements IEventListener {
 					for (Ship s : players) {
 						// checks with collision with enemies
 						if (p.collidesWith(s) && s.getPlayerNum() != player.getPlayerNum()) {
-							s.setNrg(s.getNrg() - p.getDamage());
+							if(p.getDamage() == 0) {
+								s.setXv(0);
+								s.setYv(0);
+							} else {
+								s.setNrg(s.getNrg() - p.getDamage());
+							}
 							p.setRemove(true);
 						}
 					}
@@ -441,15 +535,31 @@ public class Screens implements IEventListener {
 		case CombatEvent.DEATH:
 			Ship s = (Ship) (event.getSource());
 			int sNum = s.getPlayerNum();
+			System.out.println(sNum);
+			System.out.println(((DisplayObjectContainer) ((DisplayObjectContainer) playersLivesBar.getChildren().get(sNum)).getChildren().get(s.getLives())).getChildren().get(0).getId());
 			((DisplayObjectContainer) ((DisplayObjectContainer) playersLivesBar.getChildren().get(sNum)).getChildren().get(s.getLives())).removeIndex(0);
+			
 			if(s.getLives() == 0) {
-				System.out.println("RemoveIndex :"+sNum);
-				playerNode.removeChild(s);
-				deadPlayers.add(s);
+				Tween finalDeath = new Tween(s);
+				finalDeath.animate(TweenableParam.X, s.getPosition().getX(), s.getPosition().getX(), deathManager.deathTime, Function.LINEAR);
+				finalDeath.addEventListener(this, TweenEvent.TWEEN_COMPLETE_EVENT);
+				TweenJuggler.getInstance().add(finalDeath);
 			}
+//			Tween tween = new Tween(s);
+//			tween.animate(TweenableParam.X, s.getPosition().getX(), s.getPosition().getX(), deathManager.deathTime, Function.LINEAR);
+//
+//			players.remove(s);
+			
 			break;
 		case TweenEvent.TWEEN_COMPLETE_EVENT:
 			// the player is revived, 
+			Tween tween = ((TweenEvent) event).getTween();
+			Ship deadShip = (Ship)tween.getObj();
+			int sNum1 = deadShip.getPlayerNum();
+			System.out.println("RemoveIndex :"+sNum1);
+			playerNode.removeChild(deadShip);
+			deadPlayers.add(deadShip);
+			
 		}
 
 	}
