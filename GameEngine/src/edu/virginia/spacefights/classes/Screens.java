@@ -39,7 +39,9 @@ public class Screens implements IEventListener {
 	static double dampen = -0.65;
 	int gameWidth, gameHeight;
 	private DisplayObjectContainer gameScreen, shipSelectScreen;
-	private Sprite scene, plat1, plat2, plat3, plat4, plat5, plat6, plat7, plat8, plat9, plat10, plat11, plat12, plat13, plat14, plat15, plat16;
+	//private Sprite scene, plat1, plat2, plat3, plat4, plat5, plat6, plat7, plat8, plat9, plat10, plat11, plat12, plat13, plat14, plat15, plat16;
+	private Sprite scene, plat1, plat2, plat3, plat4, plat13, plat14, plat15;
+
 
 	private ArrayList<Sprite> platforms = new ArrayList<Sprite>();
 	private ArrayList<Ship> players = new ArrayList<Ship>();	
@@ -76,7 +78,7 @@ public class Screens implements IEventListener {
 		makeGameScreen();
 
 		scene.addChild(shipSelectScreen);
-		SoundManager.playMusic("sound.wav");
+		SoundManager.playMusic("spacefights_low.wav");
 		TweenJuggler tj = new TweenJuggler();
 	}
 
@@ -109,7 +111,7 @@ public class Screens implements IEventListener {
 			selectorBoxes.add(selector);
 		}
 		Sprite blurb = new Sprite("blurb", "blurb.png");
-		blurb.setPosition(500,500);
+		blurb.setPosition((SpaceFights.gameWidth/2)-(blurb.getWidth()/2),500);
 		shipSelectScreen.addChild(blurb);
 
 		
@@ -142,7 +144,7 @@ public class Screens implements IEventListener {
 			
 			for(int i = 0; i < controllers.size(); i++) {
 				Sprite selector = selectorBoxes.get(i);
-				
+				//controllers.get(i).printButtonSummary();
 				if(shipChoice[i] == -1 && controllers.get(i).isButtonPressed(GamePad.BUTTON_START)) {
 					shipChoice[i] = 0;
 					selector.setVisible(true);
@@ -157,7 +159,7 @@ public class Screens implements IEventListener {
 				} 
 				Sprite currently_selected_ship = playerAvailableShips.get(i).get(shipChoice[i]);
 
-				if(controllers.get(i).getLeftStickXAxis() == -1 && !playersReady[i]) {
+				if((controllers.get(i).getLeftStickXAxis() == -1 || controllers.get(i).isDPadPressed(GamePad.DPAD_LEFT)) && !playersReady[i]) {
 					if(!pressedButtonLastFrame[i]){ 
 						pressedButtonLastFrame[i] = true;
 						Tween oldShipTween = new Tween(currently_selected_ship);
@@ -237,22 +239,20 @@ public class Screens implements IEventListener {
 		scene.addChild(gameScreen);
 		scene.addChild(playersLivesBar);
 		playerNode.removeAll();
-		System.out.println(playersLivesBar.removeAll());
+		playersLivesBar.removeAll();
 		for(int i = 0; i<shipChoice.length; i++) {
-			System.out.println("first flag" + i);
 			if(shipChoice[i] == -1) {
 				playersLivesBar.addChild(null);
 				continue;
 			}
-			System.out.println("second flag" + i);
 			// make and add player to display tree
 			System.out.println(playersLivesBar.getChildren().toString() + " Before " + i);
 			Ship player = new Ship(ShipType.valueOf(playerAvailableShips.get(i).get(shipChoice[i]).getId()), i);
 			player.addEventListener(collisionManager, CollisionEvent.PLATFORM);
 			player.addEventListener(deathManager, CombatEvent.DEATH);
 			player.addEventListener(this, CombatEvent.DEATH);
-			player.setScaleX(0.8);
-			player.setScaleY(0.65);
+			player.setScaleX(1);
+			player.setScaleY(1);
 			player.setPivotPoint(player.getWidth()/2, player.getHeight()/2);
 			playerNode.addChild(player);
 			players.add(player);
@@ -280,18 +280,18 @@ public class Screens implements IEventListener {
 		// IDEA TODO: make a level builder class; this will also maybe help to make a level select screen
 		plat1 = new Sprite("plat1", "platformSpaceVertical.png");
 		plat2 = new Sprite("plat2", "moon.png");
-		plat2.setScaleX(9);
-		plat2.setScaleY(9);
+		plat2.setScaleX(.4);
+		plat2.setScaleY(.4);
 		plat3 = new Sprite("plat3", "platformSpaceVertical.png");
 		plat4 = new Sprite("plat4", "platformSpace.png");
-		plat5 = new Sprite("plat5", "platformSpace.png");
-		plat6 = new Sprite("plat6", "platformSpace.png");
-		plat7 = new Sprite("plat7", "platformSpace.png");
-		plat8 = new Sprite("plat8", "platformSpace.png");
-		plat9 = new Sprite("plat9", "platformSpace.png");
-		plat10 = new Sprite("plat10", "platformSpace.png");
-		plat11 = new Sprite("plat11", "platformSpace.png");
-		plat12 = new Sprite("plat12", "platformSpace.png");
+//		plat5 = new Sprite("plat5", "platformSpace.png");
+//		plat6 = new Sprite("plat6", "platformSpace.png");
+//		plat7 = new Sprite("plat7", "platformSpace.png");
+//		plat8 = new Sprite("plat8", "platformSpace.png");
+//		plat9 = new Sprite("plat9", "platformSpace.png");
+//		plat10 = new Sprite("plat10", "platformSpace.png");
+//		plat11 = new Sprite("plat11", "platformSpace.png");
+//		plat12 = new Sprite("plat12", "platformSpace.png");
 		plat13 = new Sprite("plat13", "platformSpaceVertical.png");
 		plat14 = new Sprite("plat14", "platformSpace.png");
 		plat15 = new Sprite("plat15", "platformSpaceVertical.png");
@@ -301,14 +301,14 @@ public class Screens implements IEventListener {
 		platforms.add(plat2);
 		platforms.add(plat3);
 		platforms.add(plat4);
-		platforms.add(plat5);
-		platforms.add(plat6);
-		platforms.add(plat7);
-		platforms.add(plat8);
-		platforms.add(plat9);
-		platforms.add(plat10);
-		platforms.add(plat11);
-		platforms.add(plat12);
+//		platforms.add(plat5);
+//		platforms.add(plat6);
+//		platforms.add(plat7);
+//		platforms.add(plat8);
+//		platforms.add(plat9);
+//		platforms.add(plat10);
+//		platforms.add(plat11);
+//		platforms.add(plat12);
 		platforms.add(plat13);
 		platforms.add(plat14);
 		platforms.add(plat15);
@@ -317,15 +317,16 @@ public class Screens implements IEventListener {
 		plat1.setPosition(400, 250);
 		plat2.setPosition(900, 300);
 		plat3.setPosition(1350, 470);
-		plat4.setPosition(0, 920);
-		plat5.setPosition(plat4.getWidth(), 925);
-		plat6.setPosition(plat4.getWidth() * 2, 925);
-		plat7.setPosition(plat4.getWidth() * 3, 925);
-		plat8.setPosition(plat4.getWidth() * 4, 925);
-		plat9.setPosition(plat4.getWidth() * 5, 925);
-		plat10.setPosition(plat4.getWidth() * 6, 925);
-		plat11.setPosition(plat4.getWidth() * 7, 925);
-		plat12.setPosition(plat4.getWidth() * 8, 925);
+		plat4.setPosition(0, 925);
+		plat4.setScaleX(10);
+//		plat5.setPosition(plat4.getWidth(), 925);
+//		plat6.setPosition(plat4.getWidth() * 2, 925);
+//		plat7.setPosition(plat4.getWidth() * 3, 925);
+//		plat8.setPosition(plat4.getWidth() * 4, 925);
+//		plat9.setPosition(plat4.getWidth() * 5, 925);
+//		plat10.setPosition(plat4.getWidth() * 6, 925);
+//		plat11.setPosition(plat4.getWidth() * 7, 925);
+//		plat12.setPosition(plat4.getWidth() * 8, 925);
 		plat13.setPosition(0,0);
 		plat13.setScaleY(10);
 		plat14.setPosition(1,0);
@@ -351,31 +352,37 @@ public class Screens implements IEventListener {
 				scene.addChild(shipSelectScreen);
 				sceneToUpdate = Screens.SELECT_SCENE;
 				deadPlayers.clear();
+				for(int i = 0; i < pressedButtonLastFrame.length; i++) {
+					pressedButtonLastFrame[i] = true;
+				}
 			}
 		}
 	}
+	Sprite gameOver;
 	
 	public void gameScreenUpdate(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
 		if (scene != null) { // makes sure we loaded everything
 			scene.update(pressedKeys, controllers);
 
 			// check if only 1 player is left on the screen
-			if(players.size() == 1) {
+			if(players.size() == 1  && !players.get(0).isDying()) {
 				// Display Game Over; players.get(0).getPlayerNum() wins
 				Ship winner = players.get(0);
 				winner.removeEnergy();
 				Tween winnerDance = new Tween(winner);
-				winnerDance.animate(TweenableParam.X, 50, gameWidth, 6000, Function.EASE_IN_OUT_QUAD);
-				winnerDance.animate(TweenableParam.Y, 50, gameHeight, 6000, Function.LINEAR);
-				winnerDance.animate(TweenableParam.ROTATION, 90, 0, 6000, Function.LINEAR);
+				winnerDance.animate(TweenableParam.X, winner.getPosition().x, (winner.getPosition().x > gameWidth/2 ? -200 : gameWidth+100), 6000, Function.EASE_IN_OUT_QUAD);
+				winnerDance.animate(TweenableParam.Y, winner.getPosition().y, (winner.getPosition().y > gameHeight/2 ? -200 : gameHeight+100), 6000, Function.LINEAR);
+				winnerDance.animate(TweenableParam.ROTATION, 90, 180, 6000, Function.LINEAR);
+				winnerDance.animate(TweenableParam.SCALE_X, 1, 2, 6000, Function.EASE_IN_OUT_QUAD);
+				winnerDance.animate(TweenableParam.SCALE_Y, 1, 2, 6000, Function.EASE_IN_OUT_QUAD);
 				TweenJuggler.getInstance().add(winnerDance);
-				Sprite gameOver = new Sprite("gameOver", "gameOver.png");
+				gameOver = new Sprite("gameOver", "gameOver.png");
 				scene.addChild(gameOver);
 				gameOver.setPosition((SpaceFights.gameWidth/2)-(gameOver.getWidth()/2),200);
 				sceneToUpdate = Screens.GAME_OVER;
 				return;
 			} else if (players.size() == 0) {
-				Sprite gameOver = new Sprite("gameOver", "gameOverDOUBLE.png");
+				gameOver = new Sprite("gameOver", "gameOverDOUBLE.png");
 				scene.addChild(gameOver);
 				gameOver.setPosition((SpaceFights.gameWidth/2)-(gameOver.getWidth()/2),200);
 				sceneToUpdate = Screens.GAME_OVER;
@@ -410,16 +417,16 @@ public class Screens implements IEventListener {
 						Rectangle otherHB = other.getHitbox();
 						Rectangle overlap = myHB.intersection(otherHB);
 						if (overlap.width < overlap.height) {
-							player.setNrg((int) (player.getNrg()-Ship.MOMENTUM_DAMAGE_RATIO*Math.abs(other.getXv()-player.getXv()) * other.getM()/(other.getM() + player.getM())));
-							other.setNrg((int) (other.getNrg()-Ship.MOMENTUM_DAMAGE_RATIO*Math.abs(player.getXv()-other.getXv()) * player.getM()/(player.getM() + other.getM())));
+							player.setNrg((int) (player.getNrg()-player.momentum_damage_ratio*Math.abs(other.getXv()-player.getXv()) * other.getM()/(other.getM() + player.getM())));
+							other.setNrg((int) (other.getNrg()-other.momentum_damage_ratio*Math.abs(player.getXv()-other.getXv()) * player.getM()/(player.getM() + other.getM())));
 							//System.out.println(player.getNrg());
 							// momentum formulae
 							double oldV1 = player.getXv();
 							player.setXv((elasticity*other.getM()*other.getXv() + player.getXv()*(player.getM()-elasticity*other.getM()))/(other.getM() + player.getM()));  
 							other.setXv((elasticity *player.getM()*oldV1 + other.getXv()*(other.getM()-elasticity*player.getM()))/(other.getM() + player.getM()));
 						} else {// coming from top or bottom
-							player.setNrg((int) (player.getNrg()-Ship.MOMENTUM_DAMAGE_RATIO*Math.abs(other.getYv()-player.getYv()) * other.getM()/(other.getM() + player.getM())));
-							other.setNrg((int) (other.getNrg()-Ship.MOMENTUM_DAMAGE_RATIO*Math.abs(player.getYv()-other.getYv()) * player.getM()/(player.getM() + other.getM())));
+							player.setNrg((int) (player.getNrg()-player.momentum_damage_ratio*Math.abs(other.getYv()-player.getYv()) * other.getM()/(other.getM() + player.getM())));
+							other.setNrg((int) (other.getNrg()-other.momentum_damage_ratio*Math.abs(player.getYv()-other.getYv()) * player.getM()/(player.getM() + other.getM())));
 							double oldV2 = player.getYv();
 							player.setYv((elasticity*other.getM()*other.getYv() + player.getYv()*(player.getM()-elasticity*other.getM()))/(other.getM() + player.getM()));  
 							other.setYv((elasticity*player.getM()*oldV2 + other.getYv()*(other.getM()-elasticity*player.getM()))/(other.getM() + player.getM()));
@@ -535,8 +542,6 @@ public class Screens implements IEventListener {
 		case CombatEvent.DEATH:
 			Ship s = (Ship) (event.getSource());
 			int sNum = s.getPlayerNum();
-			System.out.println(sNum);
-			System.out.println(((DisplayObjectContainer) ((DisplayObjectContainer) playersLivesBar.getChildren().get(sNum)).getChildren().get(s.getLives())).getChildren().get(0).getId());
 			((DisplayObjectContainer) ((DisplayObjectContainer) playersLivesBar.getChildren().get(sNum)).getChildren().get(s.getLives())).removeIndex(0);
 			
 			if(s.getLives() == 0) {
@@ -556,7 +561,6 @@ public class Screens implements IEventListener {
 			Tween tween = ((TweenEvent) event).getTween();
 			Ship deadShip = (Ship)tween.getObj();
 			int sNum1 = deadShip.getPlayerNum();
-			System.out.println("RemoveIndex :"+sNum1);
 			playerNode.removeChild(deadShip);
 			deadPlayers.add(deadShip);
 			

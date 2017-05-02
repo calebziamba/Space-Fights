@@ -13,7 +13,7 @@ import edu.virginia.engine.util.GameClock;
 import edu.virginia.engine.util.SoundManager;
 
 public class Ship extends PhysicsSprite {
-	public static final int MOMENTUM_DAMAGE_RATIO = 150;
+	public int momentum_damage_ratio;
 
 	private int nrg;
 	private int nrgCap;
@@ -60,9 +60,11 @@ public class Ship extends PhysicsSprite {
 		if(type.equals(ShipType.Rhino)) {
 			rotate_speed =3;
 			max_speed = 15;
+			momentum_damage_ratio = 130;
 		} else {
 			max_speed = 10;
 			rotate_speed = 5;
+			momentum_damage_ratio = 150;
 		}
 		
 		if(playerNumber == 0)
@@ -127,11 +129,20 @@ public class Ship extends PhysicsSprite {
 				lastShot.resetGameClock();
 				double x = this.getX() + this.getPivotPoint().x + Math.cos(rotationInRads)*this.getHeight()/2;
 				double y = this.getY() + this.getPivotPoint().y + Math.sin(rotationInRads)*this.getWidth()/2;
-				projectiles.add(new Projectile(ProjectileType.Bullet, x, y, this.getRotation()-90));
+				switch(type) {
+				case Lion:
+					projectiles.add(new Projectile(ProjectileType.Bullet, x, y, this.getRotation()-90));
+		
+					break;
+				default:
+					projectiles.add(new Projectile(ProjectileType.NoBounceBullet, x, y, this.getRotation()-90));
+				}
 			}
 
 			if(playerController.isButtonPressed(GamePad.BUTTON_B) && lastShot.getElapsedTime() >= type.getSpecialCD() && nrg > type.getSpecialCost()) {
-				SoundManager.playSoundEffect("laser.wav");
+//				if (type != ShipType.Rhino) {
+//					SoundManager.playSoundEffect("laser.wav");
+//				}
 				nrg = nrg-type.getSpecialCost();
 				lastShot.resetGameClock();
 
@@ -140,20 +151,19 @@ public class Ship extends PhysicsSprite {
 				switch(type) {
 				case Rhino:
 					thrust = 0.25;
+					rotate_speed = 1.5;
 					break;
 				case Vulture:	
 					projectiles.add(new Projectile(ProjectileType.Laser, x, y, this.getRotation()-90));
+					SoundManager.playSoundEffect("laser.wav");
 					break;
 				case Lion:
 					projectiles.add(new Projectile(ProjectileType.FrostBullet, x, y, this.getRotation()-90));
-				}
-				if(type.equals(ShipType.Rhino)) {
-					thrust = 0.25;
-				} else {
-					
+					SoundManager.playSoundEffect("freezesound.wav");
 				}
 			} else if (type.equals(ShipType.Rhino)) {
 				thrust = ShipType.Rhino.getThrust();
+				rotate_speed = 3;
 			}
 		}
 		
@@ -215,8 +225,9 @@ public class Ship extends PhysicsSprite {
 				this.nrg = 1;
 				lives--;
 				this.dispatchEvent(new Event(CombatEvent.DEATH, this));
-			}
-			else 
+			} if(isDying) {
+				this.nrg=1;
+			} else 
 				this.nrg = energy;
 		}
 	}
