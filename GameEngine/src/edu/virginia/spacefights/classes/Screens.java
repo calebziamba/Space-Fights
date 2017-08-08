@@ -343,21 +343,6 @@ public class Screens implements IEventListener {
 	}
 
 	
-	public void gameOverUpdate(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
-		for (GamePad controller : controllers) {
-			if (controller.isButtonPressed(GamePad.BUTTON_START)) {
-				scene.removeChildByID("gameScreen"); 
-				scene.removeChildByID("lifeBars");
-				scene.removeChildByID("gameOver");
-				scene.addChild(shipSelectScreen);
-				sceneToUpdate = Screens.SELECT_SCENE;
-				deadPlayers.clear();
-				for(int i = 0; i < pressedButtonLastFrame.length; i++) {
-					pressedButtonLastFrame[i] = true;
-				}
-			}
-		}
-	}
 	Sprite gameOver;
 	
 	public void gameScreenUpdate(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
@@ -367,17 +352,12 @@ public class Screens implements IEventListener {
 			// check if only 1 player is left on the screen
 			if(players.size() == 1  && !players.get(0).isDying()) {
 				// Display Game Over; players.get(0).getPlayerNum() wins
-<<<<<<< HEAD
-				sceneToUpdate = GAME_OVER;
-=======
->>>>>>> branch 'master' of https://github.com/jeffreygray/Space-Fights.git
 				Ship winner = players.get(0);
-<<<<<<< HEAD
+
 				winner.winner();
 				
 				players.clear();
 				deadPlayers.clear();
-=======
 				winner.removeEnergy();
 				Tween winnerDance = new Tween(winner);
 				winnerDance.animate(TweenableParam.X, winner.getPosition().x, (winner.getPosition().x > gameWidth/2 ? -200 : gameWidth+100), 6000, Function.EASE_IN_OUT_QUAD);
@@ -396,7 +376,6 @@ public class Screens implements IEventListener {
 				scene.addChild(gameOver);
 				gameOver.setPosition((SpaceFights.gameWidth/2)-(gameOver.getWidth()/2),200);
 				sceneToUpdate = Screens.GAME_OVER;
->>>>>>> branch 'master' of https://github.com/jeffreygray/Space-Fights.git
 				return;
 			}
 			ArrayList<Ship> alreadyCollidedWithPlayerThisFrame = new ArrayList<Ship>();
