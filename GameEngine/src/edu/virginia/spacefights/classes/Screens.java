@@ -20,10 +20,12 @@ import edu.virginia.engine.tweening.TweenEvent;
 import edu.virginia.engine.tweening.TweenJuggler;
 import edu.virginia.engine.tweening.TweenableParam;
 import edu.virginia.engine.util.SoundManager;
+import edu.virginia.lab1test.SpaceFights;
 
 public class Screens implements IEventListener {
 	public static final int GAME_SCENE = 0;
 	public static final int SELECT_SCENE = 1;
+	public static final int GAME_OVER = 2;
 	private int sceneToUpdate = SELECT_SCENE;
 
 	/**
@@ -283,13 +285,12 @@ public class Screens implements IEventListener {
 			// check if only 1 player is left on the screen
 			if(players.size() == 1) {
 				// Display Game Over; players.get(0).getPlayerNum() wins
-				sceneToUpdate = -1;
+				sceneToUpdate = GAME_OVER;
 				Ship winner = players.get(0);
-				Tween winnerDance = new Tween(winner);
-				winnerDance.animate(TweenableParam.X, 50, gameWidth, 2000, Function.EASE_IN_OUT_QUAD);
-				winnerDance.animate(TweenableParam.Y, 50, 150, 2000, Function.LINEAR);
-				winnerDance.animate(TweenableParam.ROTATION, 90, 0, 2000, Function.LINEAR);
-				TweenJuggler.getInstance().add(winnerDance);
+				winner.winner();
+				
+				players.clear();
+				deadPlayers.clear();
 				return;
 			}
 			ArrayList<Ship> alreadyCollidedWithPlayerThisFrame = new ArrayList<Ship>();
@@ -431,6 +432,39 @@ public class Screens implements IEventListener {
 		} // end not null check
 	}
 
+	
+	public void gameOverUpdate(ArrayList<String> pressedKeys, ArrayList<GamePad> controllers) {
+		if(!playersReady[0] && !playersReady[1]) {
+			sceneToUpdate = SELECT_SCENE;
+			for(int i = 0; i < selectorBoxes.size(); i++) {
+				Sprite selector = selectorBoxes.get(i);
+				selector.removeChildByID("player"+i+"Ready");
+			}
+			playerNode.removeAll();
+			scene.removeChild(gameScreen);
+			scene.addChild(shipSelectScreen);
+		}
+		for(int i = 0; i < controllers.size(); i++) {
+			if(controllers.get(i).isButtonPressed(GamePad.BUTTON_START)) {
+				sceneToUpdate = SELECT_SCENE;
+				for(int j = 0; j < selectorBoxes.size(); j++) {
+					Sprite selector = selectorBoxes.get(j);
+					playersReady[j] = false;
+					selector.removeChildByID("player"+i+"Ready");
+				}
+				playerNode.removeAll();
+				scene.removeChild(gameScreen);
+				scene.addChild(shipSelectScreen);
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+		}
+	}
+	
 	public DisplayObjectContainer getScene() {
 		return scene;
 	}
@@ -453,4 +487,6 @@ public class Screens implements IEventListener {
 		}
 
 	}
+
+	
 }

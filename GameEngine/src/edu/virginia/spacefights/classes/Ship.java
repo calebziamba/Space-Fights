@@ -9,8 +9,13 @@ import edu.virginia.engine.display.PhysicsSprite;
 import edu.virginia.engine.display.Sprite;
 import edu.virginia.engine.events.CombatEvent;
 import edu.virginia.engine.events.Event;
+import edu.virginia.engine.tweening.Function;
+import edu.virginia.engine.tweening.Tween;
+import edu.virginia.engine.tweening.TweenJuggler;
+import edu.virginia.engine.tweening.TweenableParam;
 import edu.virginia.engine.util.GameClock;
 import edu.virginia.engine.util.SoundManager;
+import edu.virginia.lab1test.SpaceFights;
 
 public class Ship extends PhysicsSprite {
 	public static final int MOMENTUM_DAMAGE_RATIO = 150;
@@ -334,5 +339,17 @@ public class Ship extends PhysicsSprite {
 
 	public int getLives() {
 		return lives;
+	}
+
+	public void winner() {
+		SpaceFights.gameOver(playerNum);
+		Tween winnerDance = new Tween(this);
+		winnerDance.animate(TweenableParam.X, 50, 1200, 2000, Function.EASE_IN_OUT_QUAD);
+		winnerDance.animate(TweenableParam.Y, 50, 500, 2000, Function.LINEAR);
+		winnerDance.animate(TweenableParam.ROTATION, 90, 0, 2000, Function.LINEAR);
+		TweenJuggler.getInstance().add(winnerDance);
+		
+		this.nrgBack.setVisible(false);
+		this.nrgFront.setVisible(false);
 	}
 }
