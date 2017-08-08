@@ -11,12 +11,16 @@ import edu.virginia.engine.controller.GamePad;
 import edu.virginia.engine.display.Game;
 import edu.virginia.engine.tweening.TweenJuggler;
 import edu.virginia.spacefights.classes.Screens;
+<<<<<<< HEAD
 import java.awt.Font;
+=======
+>>>>>>> branch 'master' of https://github.com/jeffreygray/Space-Fights.git
 
 
 public class SpaceFights extends Game {
-	static int gameWidth = 1200;
-	static int gameHeight = 700;
+	// jeff 1800x1000 - will use for game expo bc larger screen 
+	public static int gameWidth = 1800;
+	public static int gameHeight = 1000;
 	Screens screen;
 	private static int winningPlayer;
 	
@@ -39,9 +43,15 @@ public class SpaceFights extends Game {
 				break;
 			case Screens.GAME_OVER:
 				screen.gameOverUpdate(pressedKeys, controllers);
+<<<<<<< HEAD
 			}		
+=======
+			}	
+			
+>>>>>>> branch 'master' of https://github.com/jeffreygray/Space-Fights.git
 			TweenJuggler.nextFrame();
 		}
+		
 	}
 
 	@Override
